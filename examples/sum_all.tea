@@ -1,0 +1,5 @@
+func sum_all x acc as
+    exit acc x + when depth 2 =
+    set acc as acc x +
+    return acc sum_all
+output 1 2 3 4 0 sum_all
