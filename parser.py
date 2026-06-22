@@ -1,4 +1,4 @@
-from TeaLang_basic_parser_nodes import *
+from parser_nodes import *
 
 
 class Parser:
