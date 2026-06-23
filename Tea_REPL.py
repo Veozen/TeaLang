@@ -1,10 +1,10 @@
 import sys
 from lexer import *
-from TeaLang_basic_parser import *
-from TeaLang_basic_AST_evaluator import *
+from parser import *
+from evaluator import *
 
 
-def run(prg:str):
+def run_program(prg:str):
     my_program_tokens = tokenize(prg)
     my_parser = Parser(my_program_tokens)
     my_program_ast = my_parser.parse_program()
@@ -77,7 +77,3 @@ def run_repl():
             buffer.clear()
             empty_line_count = 0
 
-
-
-
-run_repl()
