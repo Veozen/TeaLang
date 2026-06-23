@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-from Tea_REPL import *
+from repl import *
 
 
 def run_script_file(file_path):
