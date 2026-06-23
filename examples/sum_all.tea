@@ -1,5 +1,7 @@
+# Here when returned, since the function takes two arguments but the return statement only provides 1,
+# the function sum_all will leech the required additional x input argument from the enclosing stack values
 func sum_all x acc as
-    exit acc x + when depth 2 =
+    exit acc x + when depth 2 = # depth keyword return the number of arguments on the stack before the function is called
     set acc as acc x +
     return acc sum_all
 output 1 2 3 4 0 sum_all
