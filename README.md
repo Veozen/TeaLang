@@ -11,8 +11,8 @@ No if, just function guard statement.
    git clone https://github.com/veozen/TeaLang.git  
    cd TeaLang
 
-2. Fire up the interactive interpreter (REPL):
+2. Fire up the interactive interpreter (REPL):  
    python Tea.py --repl
 
-3. Run a script file:
+3. Run a script file:  
    python Tea.py examples/fibonacci.tea
