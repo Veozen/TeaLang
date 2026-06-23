@@ -7,7 +7,7 @@ No if, just function guard statement.
 
 ## Quick Start
 
-1. Clone the repository:
+1. Clone the repository:  
    git clone https://github.com/veozen/TeaLang.git  
    cd TeaLang
 
