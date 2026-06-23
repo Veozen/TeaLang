@@ -19,14 +19,18 @@ def run_repl():
     TeaLang = ASTInterpreter(Environment())
 
     # --- ACTIVATE COMMAND HISTORY ---
+    # Cross-platform history setup block
     try:
         import readline
-        # (Optional) Enables standard GNU auto-completion behaviors if needed later
-        readline.parse_and_bind("tab: complete")
     except ImportError:
-        # This prevents the program from crashing if someone runs it where readline isn't built-in
-        pass
-        
+        try:
+            import pyreadline3 as readline
+        except ImportError:
+            readline = None
+
+    if readline:
+        readline.parse_and_bind("tab: complete")
+
     print("TeaLang Interactive Interpreter!")
     print("Type 'exit' or press Ctrl+C to quit.\n")
 
