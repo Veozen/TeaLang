@@ -184,7 +184,6 @@ class Parser:
         start_token = self.peek()
         self.consume("return")
         expr = self.parse_expr()
-        self.consume(";")
         return ReturnStmt(expr = expr,
                           line  = start_token.line,
                           column= start_token.col)
