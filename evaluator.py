@@ -195,13 +195,10 @@ class ASTInterpreter:
                 try:
                     # 2. Parse the target file into its own independent AST block
                     # This runs your standard Lexer and Parser on the imported file
-                    with open(filename ,'r') as f:
-
-                      my_program_tokens = tokenize(my_program)
                     imported_ast = parse_file_to_ast(filename)
 
                     # 3. Look through the statements inside the imported file's body
-                    for sub_node in imported_ast.statements:
+                    for sub_node in imported_ast.body.statements:
 
                         # 4. SCRAPE ONLY FUNCTIONS: If it's a function statement, register it!
                         if isinstance(sub_node, FuncStmt):
@@ -323,8 +320,7 @@ def parse_file_to_ast(filepath):
     with open(filepath, 'r') as file:
         for line_num, line in enumerate(file, start=1):
             # 1. Tokenize the single line string
-            # (Assuming your tokenizer looks like: tokenizer.tokenize(text_string))
-            line_tokens = tokenizer.tokenize(line)
+            line_tokens = tokenize(line)
 
             # OPTIONAL BUT HIGHLY RECOMMENDED:
             # If your Token objects have a .line attribute, you can inject the
