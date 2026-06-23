@@ -18,6 +18,15 @@ def run_repl():
     # 1. Instantiate the shared environment outside the loop so functions/variables persist!
     TeaLang = ASTInterpreter(Environment())
 
+    # --- ACTIVATE COMMAND HISTORY ---
+    try:
+        import readline
+        # (Optional) Enables standard GNU auto-completion behaviors if needed later
+        readline.parse_and_bind("tab: complete")
+    except ImportError:
+        # This prevents the program from crashing if someone runs it where readline isn't built-in
+        pass
+        
     print("TeaLang Interactive Interpreter!")
     print("Type 'exit' or press Ctrl+C to quit.\n")
 
