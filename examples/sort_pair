@@ -1,0 +1,5 @@
+func sort_pair x y as
+    exit x y  + when x y <
+    return y x
+set x y as 2 1 sort_pair
+output x y
