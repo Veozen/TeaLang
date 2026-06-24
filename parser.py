@@ -258,11 +258,15 @@ class Parser:
             if tok.value in self.expression_terminator:
                 break
             tokens.append(self.advance())
-        if not tokens:
-            raise SyntaxError("Expected expression")
+            
+        # --- SAFE EMPTY EXPRESSION FALLBACK ---
+        # If the expression is empty, default to line 1, column 1 (or track last known token)
+        line = start_token.line if start_token else 1
+        col = start_token.col if start_token else 1
+
         return Expr(tokens  = tokens,
-                    line    = start_token.line,
-                    column  = start_token.col)
+                    line    = line,
+                    column  = col)
 
     # def parse_block(self) -> StmtBlock:
     #     """Consumes tokens until it hits a ';' terminator."""
