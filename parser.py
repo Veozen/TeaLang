@@ -96,6 +96,11 @@ class Parser:
         self.consume("set")
         identifier_list = self.parse_identifier_list()
         expr = self.parse_expr()
+
+        # Force an error for 'set x as '
+        if not expr.tokens:
+            raise SyntaxError(f"Parser Error: 'set {" ".join([id.name for id in identifier_list.identifiers])} as' requires an non-empty expression ")
+
         return SetStmt( identifiers = identifier_list,
                         expr        = expr,
                         line        = start_token.line,
