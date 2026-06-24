@@ -1,0 +1,63 @@
+# stack operation
+func drop x as
+  # discard value
+  return
+
+func dup x as
+  # duplicate value
+  return x x
+
+func 2dup x y as
+  # duplicate top pair
+  return x y x y
+
+func over x y  as
+  # duplicate value
+  return x y x
+
+func swap x y as
+  # swap two values
+  return y x
+
+func rot x y z as
+  return y z x
+
+func nip x y as
+  #Discard the second element from the top
+  return y
+
+func tuck x y as
+  # Copy the top element below the second element
+  return y x y
+
+
+# math
+func min x y as
+  # minimum of two values
+  exit x when x y <=
+  return y
+
+func max x y as
+  # maximum of two values
+  exit x when x y >=
+  return y
+
+#func mod x y as
+#    return x x y / y * -
+
+
+# logical
+func not x as
+  exit 0 when x 1 ==
+  return 1
+
+func and x y as
+  exit 1 when x y * 0 >  # If both are > 0, product is > 0
+  return 0
+
+func or x y as
+    return x not y not and not
+
+func xor x y as
+    exit 0 when x y and
+    return x y or
