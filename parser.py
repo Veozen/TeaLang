@@ -1,6 +1,5 @@
 from parser_nodes import *
 
-
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
@@ -97,7 +96,7 @@ class Parser:
         identifier_list = self.parse_identifier_list()
         expr = self.parse_expr()
 
-        # Force an error for 'set x as '
+        # Force an error for 'set x as ;'
         if not expr.tokens:
             raise SyntaxError(f"Parser Error: 'set {" ".join([id.name for id in identifier_list.identifiers])} as' requires an non-empty expression ")
 
@@ -189,6 +188,7 @@ class Parser:
         start_token = self.peek()
         self.consume("return")
         expr = self.parse_expr()
+        #self.consume(";")
         return ReturnStmt(expr = expr,
                           line  = start_token.line,
                           column= start_token.col)
@@ -204,6 +204,11 @@ class Parser:
                               )
         self.consume("when")
         cond = self.parse_expr()
+
+        if not cond.tokens:
+            raise SyntaxError(f"Line {current_token.line}, Col {current_token.col}: "
+                              f"'when' must be followed by a non-empty expression'")
+
         return ExitStmt(condition  = cond,
                         expr  = expr,
                         line  = start_token.line,
@@ -257,8 +262,19 @@ class Parser:
                 break
             if tok.value in self.expression_terminator:
                 break
-            tokens.append(self.advance())
-            
+            # Inside your Parser class
+            if tok.value == "fn":
+                self.consume('fn') # Consume 'fn'
+                func_name_token = self.advance() # Consume the function name (e.g., 'square')
+
+                # Return this specific node type to the AST assembly line
+                tokens.append(FunctionPointer(func_name_token.value))
+            elif tok.value.isdigit():
+                number_token = self.advance()
+                tokens.append(Integer(int(number_token.value)))
+            else:
+                tokens.append(self.advance())
+
         # --- SAFE EMPTY EXPRESSION FALLBACK ---
         # If the expression is empty, default to line 1, column 1 (or track last known token)
         line = start_token.line if start_token else 1
@@ -267,50 +283,3 @@ class Parser:
         return Expr(tokens  = tokens,
                     line    = line,
                     column  = col)
-
-    # def parse_block(self) -> StmtBlock:
-    #     """Consumes tokens until it hits a ';' terminator."""
-    #     start_token = self.peek()
-    #     statements = []
-    #     while self.peek() and self.peek().value != ";":
-    #         statements.append(self.parse_statement())
-    #     self.consume(";") # Remove the ';'
-    #     return StmtBlock(line=start_token.line,
-    #                      column=start_token.column,
-    #                      statements=statements)
-    #
-    # def parse_if(self) -> Statement:
-    #     self.consume("if")
-    #     cond = self.parse_expr()
-    #     then_block = self.parse_block()
-    #     else_block = self.parse_block()
-    #     return IfStmt(cond, then_block, else_block)
-    #
-    # def parse_while(self) -> Statement:
-    #     self.consume("while")
-    #     cond = self.parse_expr()
-    #     body_block = self.parse_block()
-    #     return WhileStmt(cond, body_block)
-
-    # def parse_if(self):
-    #     self.consume("if")
-    #     condition = []
-    #     # Logic to grab expression until the block starts
-    #     while self.peek() and not self.poss_block_start(self.peek()):
-    #         condition.append(self.consume())
-    #
-    #     then_block = self.parse_block()
-    #     else_block = []
-    #     if self.peek() and self.peek().value == "else":
-    #         self.consume("else")
-    #         else_block = self.parse_block()
-    #
-    #     return IfNode(condition, then_block, else_block)
-
-
-
-
-
-
-
-
