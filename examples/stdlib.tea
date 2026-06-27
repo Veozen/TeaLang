@@ -30,6 +30,9 @@ func tuck x y as
   # Copy the top element below the second element
   return y x y
 
+func count as
+  # count the number of items on the stack at that point
+  return depth
 
 # math
 func min x y as
@@ -48,11 +51,11 @@ func max x y as
 
 # logical
 func not x as
-  exit 0 when x 1 ==
+  exit 0 when x 1 =
   return 1
 
 func and x y as
-  exit 1 when x y * 0 >  # If both are > 0, product is > 0
+  exit 1 when x y * 0 >
   return 0
 
 func or x y as
@@ -61,3 +64,33 @@ func or x y as
 func xor x y as
     exit 0 when x y and
     return x y or
+
+
+# functional
+func map x func_id as
+  exit x func_id apply when depth 2 =
+  return func_id map x func_id apply
+
+func reduce x y func_id as
+  exit x y func_id apply when depth 3 =
+  set acc as x y func_id apply
+  return acc func_id reduce
+
+
+func filter_one x func_id as
+  exit x when x func_id apply 0 >
+  return
+
+func filter x func_id as
+  exit x func_id filter_one when depth 2 =
+  return func_id filter x func_id filter_one
+
+func all x y func_id as
+  exit x func_id apply y and  when depth 3 =
+  set acc as x func_id apply y and
+  return acc func_id all
+
+func any x y func_id as
+  exit x func_id apply y or  when depth 3 =
+  set acc as x func_id apply y or
+  return acc func_id any
