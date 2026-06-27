@@ -12,6 +12,7 @@ class Environment:
 
         # Maps function names -> FuncStmt AST nodes
         self.functions = {}
+        self.function_ids = ["+", "-", "*", "/", "mod", "<", "­­­­>", "<=", ">=", "="]
 
     def push_scope(self, bindings):
         self.scopes.append(bindings)
@@ -27,6 +28,23 @@ class Environment:
         raise NameError(f"Runtime Error: Variable '{name}' is not defined in this scope.")
 
 
+    def define_function(self, name, node):
+        if name not in self.functions:
+            self.function_ids.append(name) # Assigns a new unique integer index
+        self.functions[name] = node
+
+    def get_name_by_id(self, func_id):
+        if 0 <= func_id < len(self.function_ids):
+            return self.function_ids[func_id]
+        raise IndexError(f"Runtime Error: Invalid function ID {func_id}")
+
+    def get_id_by_name(self, func_name):
+        if func_name not in self.function_ids:
+            raise NameError(f"Runtime Error: function {func_name} is not defined")
+        return self.function_ids.index(func_name)
+
+
+
 class RPNEvaluator:
     def __init__(self, environment):
         self.env = environment
@@ -38,11 +56,21 @@ class RPNEvaluator:
             stack = []
 
         for token in expr_node.tokens:
-            tok = token.value
-            if tok.isdigit():
-                stack.append(int(tok))
 
-            elif tok == "input":
+            if isinstance(token, Integer):
+                stack.append(token.value)
+                continue
+            elif isinstance(token, FunctionPointer):
+                func_name = token.name
+                func_id   = self.env.get_id_by_name(func_name)
+                stack.append(func_id)
+                continue
+            elif isinstance(token, Identifier):
+                tok = token.name
+            else:
+                tok = token.value
+
+            if tok == "input":
                 # Prompt the user for input via standard input
                 # We write an empty flush to make sure the terminal shows it instantly
                 print("?", end="", file=sys.stdout, flush=True)
@@ -66,54 +94,32 @@ class RPNEvaluator:
                     # If called outside a function, default to 0
                     stack.append(0)
 
+            elif tok == "apply":
+                func_id = stack.pop() # Pops the raw integer ID
+
+                # Translate integer -> name -> AST node
+                func_name = self.env.get_name_by_id(func_id)
+                if func_name in ["+", "-", "*", "/", "mod", "<", "­­­­>", "<=", ">=", "="]:
+                    self.execute_operator_callback(func_name, stack)
+                else:
+                    func_obj  = self.env.functions[func_name]
+
+                    # Execute the function block exactly like a normal call
+                    self.execute_function_callback(func_obj, stack)
+
+
             elif tok in self.env.functions:
                 # If we hit an immediate function invocation,
                 # we'll let the interpreter handle it via a callback
                 func_obj = self.env.functions[tok]
-                #stack.extend(self.execute_function_callback(func_obj,stack))
                 self.execute_function_callback(func_obj, stack)
 
             elif self.env.scopes and tok in self.env.scopes[-1]:
                 val = self.env.get_variable_value(tok)
                 stack.append(val)
 
-            elif tok == "+":
-                b, a = stack.pop(), stack.pop()
-                stack.append(a + b)
-            elif tok == "-":
-                b, a = stack.pop(), stack.pop()
-                stack.append(a - b)
-            elif tok == "*":
-                b, a = stack.pop(), stack.pop()
-                stack.append(a * b)
-            elif tok == "/":
-                b, a = stack.pop(), stack.pop()
-                stack.append(a / b)
-            elif tok == "mod":
-                b, a = stack.pop(), stack.pop()
-                stack.append(a % b)
-            elif tok == "min":
-                b, a = stack.pop(), stack.pop()
-                stack.append(min(a,b))
-            elif tok == "max":
-                b, a = stack.pop(), stack.pop()
-                stack.append(max(a,b))
-            elif tok == "<":
-                b, a = stack.pop(), stack.pop()
-                stack.append(1 if a < b else 0)
-            elif tok == ">":
-                b, a = stack.pop(), stack.pop()
-                stack.append(1 if a > b else 0)
-            elif tok == "<=":
-                b, a = stack.pop(), stack.pop()
-                stack.append(1 if a <= b else 0)
-            elif tok == ">=":
-                b, a = stack.pop(), stack.pop()
-                stack.append(1 if a >= b else 0)
-            elif tok == "=":
-                b, a = stack.pop(), stack.pop()
-                stack.append(1 if a == b else 0)
-
+            elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "="]:
+                self.execute_operator_callback(tok, stack)
 
             else:
                 raise NameError(f"Runtime Error: Unknown operator or symbol '{tok}'")
@@ -128,6 +134,7 @@ class ASTInterpreter:
         self.evaluator = RPNEvaluator(environment)
         # Connect the evaluator's function call trigger back to us
         self.evaluator.execute_function_callback = self.execute_user_function
+        self.evaluator.execute_operator_callback = self.execute_operator
 
     def interpret(self, program):
         """Loop through your statement boxes and act on them directly."""
@@ -162,8 +169,9 @@ class ASTInterpreter:
             elif isinstance(node, FuncStmt):
                 # Save the function definition node in the environment
                 # Grab the string value out of the Token object
-                function_name_string = node.name.value
-                self.env.functions[function_name_string] = node
+                function_name_string                        = node.name.value
+                self.env.functions[function_name_string]    = node
+                self.env.function_ids.append(function_name_string)
 
             elif isinstance(node, StmtBlock):
                 # Just step through and run them sequentially. No checks, no returns!
@@ -213,11 +221,32 @@ class ASTInterpreter:
 
             return None
 
+    def execute_operator(self, operator, stack):
+        # Every single one of these operators requires exactly 2 elements
+        b, a = stack.pop(), stack.pop()
+
+        match operator:
+            case "+":   stack.append(a + b)
+            case "-":   stack.append(a - b)
+            case "*":   stack.append(a * b)
+            case "/":   stack.append(a // b)
+            case "mod": stack.append(a % b)
+            case "<":   stack.append(1 if a < b else 0)
+            case ">":   stack.append(1 if a > b else 0)
+            case "<=":  stack.append(1 if a <= b else 0)
+            case ">=":  stack.append(1 if a >= b else 0)
+            case "=":   stack.append(1 if a == b else 0)
+            case _:
+                # Put them back if the operator wasn't recognized, or handle error
+                stack.append(a)
+                stack.append(b)
+                raise ValueError(f"Unknown operator: {operator}")
+
 
     def execute_user_function(self, func_node, current_stack):
         """Binds scopes, runs optional guards, and executes the function's internal statements."""
         # 1. Grab arguments from the data stack
-        print("func name: ", func_node.name.value)
+        #print("func name: ", func_node.name.value)
 
         # 1. Capture the exact stack depth BEFORE this function consumes its own arguments
         calling_depth = len(current_stack)
@@ -225,7 +254,7 @@ class ASTInterpreter:
         func_node_args = func_node.args.identifiers
         num_args = len(func_node_args)
         args = [current_stack.pop() for _ in range(num_args)][::-1]
-        print("args: ", args)
+        #print("args: ", args)
 
         # 2. Map param names to those values
         param_names = [arg.name for arg in func_node_args]
@@ -262,47 +291,6 @@ class ASTInterpreter:
         finally:
             # 7. Collapse the scope frame sandwich safely
             self.env.pop_scope()
-
-    # def execute_user_function(self, func_node, current_stack):
-    #     """Binds scopes, runs optional guards, and executes the function's internal statements."""
-    #     # 1. Grab arguments from the data stack
-    #     print("func name: ", func_node.name.value)
-    #     func_node_args = func_node.args.identifiers
-    #     num_args = len(func_node_args)
-    #     args = [current_stack.pop() for _ in range(num_args)][::-1]
-    #     print("args: ", args)
-    #
-    #     # 2. Map param names to those values
-    #     param_names = [arg.name for arg in func_node_args]
-    #     local_bindings = dict(zip(param_names, args))
-    #     print("local bindings:", local_bindings)
-    #
-    #     # 3. Build the scope frame sandwich
-    #     self.env.push_scope(local_bindings)
-    #
-    #     print("stack: ", current_stack)
-    #
-    #     try:
-    #         # 4. Handle the Optional Guard
-    #         if func_node.exit_stmt is not None:
-    #             cond_result = self.evaluator.evaluate_expr(func_node.exit_stmt.condition)
-    #             print("condition: ", cond_result)
-    #             if cond_result and cond_result[-1] != 0: # If guard condition is true (non-zero)
-    #                 guard_return_val = self.evaluator.evaluate_expr(func_node.exit_stmt.expr)
-    #                 print("guard value: ", guard_return_val)
-    #                 return  guard_return_val # Exit early! Skip the body!
-    #
-    #         # 5. Run the function body statements
-    #         self.execute_statements(func_node.body_stmt)
-    #
-    #         # 6. Run the mandatory final return statement
-    #         return_result = self.evaluator.evaluate_expr(func_node.return_stmt.expr)
-    #         print("return value: ", return_result)
-    #         return return_result
-    #
-    #     finally:
-    #         # 7. Collapse the scope frame sandwich safely
-    #         self.env.pop_scope()
 
 
     def is_tail_call(self, expr_node):
