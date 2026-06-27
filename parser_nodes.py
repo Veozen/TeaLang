@@ -62,29 +62,15 @@ class ImportStmt(Statement):
   filename : Identifier
 
 @dataclass
-
 class FunctionPointer:
-    def __init__(self, func_id):
-        self.value = func_id  # Under the hood, it's still just an integer!
+    name: Identifier
+
+@dataclass
+class Integer:
+    value: int
 
 @dataclass
 class Program:
     source_path: str
     #type_definitions: dict  # To store those 'type' structures
     body: StmtBlock  # The main entry point of the code
-
-
-
-#
-# @dataclass
-# class IfStmt(Statement):
-#     condition: Expr
-#     then_block: StmtBlock
-#     else_block: StmtBlock
-#
-# @dataclass
-# class WhileStmt(Statement):
-#     cond: Expr
-#     body_block: StmtBlock
-
-
