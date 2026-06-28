@@ -236,6 +236,37 @@ class ASTInterpreter:
             case "<=":  stack.append(1 if a <= b else 0)
             case ">=":  stack.append(1 if a >= b else 0)
             case "=":   stack.append(1 if a == b else 0)
+            case "peek":
+                # put a back on the stack
+                stack.append(a)
+                # 1. Pop the relative index from the top of the stack
+                index = b
+
+                # 2. Calculate the actual position from the top of the stack
+                # If index is 0, it means the item right below the index we just popped.
+                target_position = len(stack) - 1 - index
+
+                if target_position < 0:
+                    raise IndexError("Runtime Error: Stack underflow during peek operation")
+
+                # 3. Copy the value (do NOT remove it!) and push it to the top
+                value = stack[target_position]
+                stack.append(value)
+            case "extract":
+                # put a back on the stack
+                stack.append(a)
+                # 1. Pop the relative index from the top of the stack
+                index = b
+
+                # 2. Calculate the actual position from the top of the stack
+                # If index is 0, it means the item right below the index we just popped.
+                target_position = len(stack) - 1 - index
+
+                if target_position < 0:
+                    raise IndexError("Runtime Error: Stack underflow during pick operation")
+
+                value = stack.pop(target_position)
+                stack.append(value)
             case _:
                 # Put them back if the operator wasn't recognized, or handle error
                 stack.append(a)
