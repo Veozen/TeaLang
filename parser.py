@@ -6,7 +6,7 @@ class Parser:
         self.pos = 0
         self.reserved_keywords = {'set', 'func', 'return', 'output', 'error', 'exit',  'import',
                                   'when', 'as', ';',
-                                  'input', 'depth', '+', '-', '*', '/', 'mod', 'min', 'max', '<', '>', '<=', '>=', '=', 'fn', 'apply'}
+                                  'input', 'depth', '+', '-', '*', '/', 'mod', 'min', 'max', '<', '>', '<=', '>=', '=', 'fn', 'apply', 'peek', 'extract'}
         self.expression_terminator = {'set', 'func', 'return', 'output', 'error', 'when', 'as', ';'}
         self.identifier_list_terminator = {'as'}
         self.is_inside_function = False
