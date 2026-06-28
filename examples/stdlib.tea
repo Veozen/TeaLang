@@ -34,6 +34,16 @@ func count as
   # count the number of items on the stack at that point
   return depth
 
+func reverse_n n as
+    exit when n 0 =
+    set new_count as n 1 -
+
+    return new_count reverse_n new_count extract
+
+func reverse as
+    return depth reverse_n
+
+
 # math
 func min x y as
   # minimum of two values
