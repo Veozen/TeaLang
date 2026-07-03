@@ -267,6 +267,21 @@ class ASTInterpreter:
 
                 value = stack.pop(target_position)
                 stack.append(value)
+            case "exchange":
+                # put a back on the stack
+                stack.append(a)
+                # 1. Pop the relative index
+                index = b
+
+                # 2. Calculate the target position
+                target_position = len(stack) - 1 - index
+
+                if target_position < 0:
+                    raise IndexError("Runtime Error: Stack underflow during exchange")
+
+                # 3. Swap the target with the current top element in-place
+                stack[target_position], stack[-1] = stack[-1], stack[target_position]
+                
             case _:
                 # Put them back if the operator wasn't recognized, or handle error
                 stack.append(a)
