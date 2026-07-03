@@ -12,7 +12,7 @@ class Environment:
 
         # Maps function names -> FuncStmt AST nodes
         self.functions = {}
-        self.function_ids = ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract"]
+        self.function_ids = ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]
 
     def push_scope(self, bindings):
         self.scopes.append(bindings)
@@ -99,7 +99,7 @@ class RPNEvaluator:
 
                 # Translate integer -> name -> AST node
                 func_name = self.env.get_name_by_id(func_id)
-                if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract"]:
+                if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]:
                     self.execute_operator_callback(func_name, stack)
                 else:
                     func_obj  = self.env.functions[func_name]
@@ -118,7 +118,7 @@ class RPNEvaluator:
                 val = self.env.get_variable_value(tok)
                 stack.append(val)
 
-            elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract"]:
+            elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]:
                 self.execute_operator_callback(tok, stack)
 
             else:
