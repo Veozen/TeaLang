@@ -43,6 +43,18 @@ func reverse_n n as
 func reverse as
     return depth reverse_n
 
+func dup_prev_n_loop n look_back as
+  exit when n 0 =
+  return n look_back + 1 - peek    n 1 - look_back 1 +  dup_prev_n_loop
+
+func dup_prev_n n as
+  exit when n 0 =
+  return n 0 dup_prev_n_loop
+
+func dup_prev as
+  return depth dup_prev_n
+
+
 
 # math
 func min x y as
