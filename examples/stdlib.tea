@@ -104,3 +104,7 @@ func any x y func_id as
   exit x func_id apply y or  when depth 3 =
   set acc as x func_id apply y or
   return acc func_id any
+
+func if cond then else as
+  exit then when cond
+  return else
