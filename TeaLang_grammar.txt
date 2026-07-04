@@ -1,0 +1,86 @@
+program is a list of statements
+a statement can be either a set_statement,  func_statement, output_statement, error_statement, comment_statement
+
+set_statement     is set identifier identifier_list as expression
+output_statement  is output expression
+error_statement   is error expression
+comment_statement is # token_list
+func_statement    is func identifier identifier_list as optional_guard_statement statement_list return_statement
+
+optional_guard_statement is exit expression when expression
+statement_list is a list of either set_statement, output_statement, error_statement, comment_statement
+return_statement is return expression
+
+identifier_list is a list of identifiers
+identifier_list can be empty
+
+identifier_or_integer is either an identifier or an integer
+identifier_or_integer_list is a list of identifier_or_integers
+identifier_or_integer_list can be empty
+
+identifier is a token that is not a integer nor a keyword
+
+expression is a identifier_or_integer_list
+
+statement start with a statement_keyword
+statement_keyword is either set, func, return,  exit, output, error
+
+expression keywords are  fn, apply, input, extract, peek, exchange, +, -, *, /, mod, <, >, <=, >=, =
+
+
+token_list is a list of token
+a token is a sequence of character delimited by space
+
+a statment list cannot involve a return_statement
+a statement involves an expression
+
+
+# Notes
+
+reserved keywords are: set, func, return,  exit, output, error, fn, apply, input, as, when, extract, peek, exchange, +, -, *, /, mod, <, >, <=, >=, =
+
+statements use prefix notation
+expression use postfix notation
+
+pure lexical scoping, no capturing of external variables
+functions can only look at their input parameters
+function definitions cannot be nested
+
+loops are handled by function recursion
+conditional are handeled by functions guard statements
+
+boudaries between statement are identified when a new statement keyword is found
+
+
+# evaluator actions
+
+function definitions are stored in a global dictionary
+
+statement keywords
+set       assigns the values on the expression stack to the identifiers listed between set and as
+output    assigns the values on the expression stack to the standard output stream
+error    assigns the values on the expression stack to the standard error stream
+func      declares a function in the global function dictionary
+return    evaluates an expression and return the values onto the stack from which the function is called
+exit      conditionally evaluates an expression and return the values onto the stack from which the function is called
+when      evaluate and expression and check the top of stack, if 0 -> False otherwise True
+
+expression keywords
+input     reads from the standard input stream
+extract   remove a value at a given address and place it on top of the stack
+peek      returns the value located at a given address
+exchange  exchange a value at a given address with the value on top of the stack
+fn        returns the address of a function
+apply     given a function address, apply the function refered to
+
+The following pop two values off the stack
++   and add them
+-   and subtract them
+*   and multiply them
+/   and integer divide them
+mod and modulo them
+<   and compare them
+>   and compare them
+<=  and compare them
+>=  and compare them
+=   and compare them
