@@ -1,16 +1,19 @@
 # TeaLang
 The Tea programing language  
-Statements use prefix notation and expression use postfix notation.  
+A concatenative programming language for integer sequences.  
+
+Statements use prefix notation.   
+Expression use postfix notation.  
 No paraenthesis, brackets or indents.  
 No loops, just recursions.  
 No if, just function guard statement.  
-No nested function definitions
+No nested function definitions.  
 
 ## Quick Start
 
 1. Clone the repository:  
    git clone https://github.com/veozen/TeaLang.git  
-   cd TeaLang
+   cd TeaLang/impl_python
 
 2. Fire up the interactive interpreter (REPL):  
    python Tea.py --repl
