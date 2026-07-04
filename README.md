@@ -1,7 +1,7 @@
 # TeaLang
 The Tea programing language  
 Statements use prefix notation and expression use postfix notation.  
-No paraenthesis, brackets or idents.  
+No paraenthesis, brackets or indents.  
 No loops, just recursions.  
 No if, just function guard statement.  
 No nested function definitions
