@@ -1,0 +1,37 @@
+func get_largest_index_loop
+                            candidate
+                            current_idx
+                            largest
+                            largest_idx
+                            n
+                            as
+  exit  candidate largest > current_idx largest_idx if
+        when n 0 =
+
+  set largest_idx as candidate largest > current_idx largest_idx if
+  set largest     as candidate largest > candidate largest if
+  #output candidate current_idx largest largest_idx n
+
+  return  current_idx 1 + peek
+          current_idx 1 +
+          largest
+          largest_idx
+          n 1 -
+          get_largest_index_loop
+
+
+func get_largest_index  as
+  return 0 peek 0 0 0 depth 1 - get_largest_index_loop
+
+#output 1 2 3 2 1 get_largest_index extract
+
+
+func selection_sort_loop x as
+  exit x when depth 1 =
+  return get_largest_index exchange  selection_sort x
+
+func selection_sort as
+  exit when depth 1 =
+  return get_largest_index extract  selection_sort_loop
+
+#output 1 2 3 2 1 selection_sort # 1 1 2 2 3
