@@ -1,3 +1,6 @@
+include("parser_nodes.jl")
+
+
 # 1. Define the Mutable State
 mutable struct Parser
     tokens::Vector{Token}
@@ -65,7 +68,7 @@ end
 # --- GRAMMAR PARSING METHODS ---
 
 function parse_program!(p::Parser)
-    statements = Any[] # Or use a shared abstract type like Statement[]
+    statements = Statement[] # Or use a shared abstract type like Statement[]
 
     first_token = peek_token(p)
     line = !isnothing(first_token) ? first_token.line : 1
@@ -81,8 +84,8 @@ function parse_program!(p::Parser)
         push!(statements, parse_statement!(p))
     end
 
-    main_body = StmtBlock(line=line, column=col, statements=statements)
-    return Program(source_path="", body=main_body)
+    main_body = StmtBlock(line, col, statements)
+    return Program("", main_body)
 end
 
 function parse_statement!(p::Parser)
@@ -90,7 +93,7 @@ function parse_statement!(p::Parser)
     if isnothing(token)
         error("SyntaxError: Expected statement, got EOF")
     end
-
+    println(stderr,token)
     if token.value == "set"
         return parse_set!(p)
     elseif token.value == "func"
@@ -101,7 +104,7 @@ function parse_statement!(p::Parser)
         return parse_error!(p)
     end
 
-    error("SyntaxError: Unexpected statement: $(token.value)")
+    error("SyntaxError: Unexpected statement: $(token.value) L:$(token.line) C:$(token.col)")
 end
 
 
