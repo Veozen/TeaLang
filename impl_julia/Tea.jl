@@ -1,4 +1,3 @@
-# 1. Bring in your project files (uncomment depending on your setup)
 include("repl.jl")
 
 # 2. Use the standard ArgParse package for CLI control
