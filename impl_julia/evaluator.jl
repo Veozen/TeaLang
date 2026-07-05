@@ -1,3 +1,5 @@
+include("parser_nodes.jl")
+
 # 1. Define the Mutable Environment Context
 mutable struct Environment
     scopes::Vector{Dict{String, Int64}}
@@ -374,7 +376,7 @@ function execute_user_function!(interp::ASTInterpreter, func_node::FuncStmt, cur
     try
         # 5. Handle Optional Guard
         if !isnothing(func_node.exit_stmt)
-            cond_result = evaluate_expr!(interp.evaluator, func_node.exit_stmt.condition, current_stack)
+            cond_result = evaluate_expr!(interp.evaluator, func_node.exit_stmt.condition, nothing)
             if !isempty(cond_result) && cond_result[end] != 0
                 evaluate_expr!(interp.evaluator, func_node.exit_stmt.expr, current_stack)
                 return nothing # Early guard exit!
