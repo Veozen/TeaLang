@@ -34,24 +34,49 @@ func count as
   # count the number of items on the stack at that point
   return depth
 
-func reverse_n n as
-    exit when n 0 =
-    set new_count as n 1 -
+func store_n n as
+  #store n values from the main stack to the auxiliary stack
+  exit when n 0 =
+  return store n 1 - store_n
 
-    return new_count reverse_n new_count extract
+func load_n n as
+  #load n values from the auxiliary stack to the main stack
+  exit when n 0 =
+  return load n 1 - load_n
+
+func store_all as
+  # store all values from the main stack to the auxiliary stack
+  return depth store_n
+
+func load_all as
+  # load all values from the auxiliary stack to the main stack
+  return depth load_all
+
+#func reverse_n n as
+#    exit when n 0 =
+#    set new_count as n 1 -
+#
+#    return new_count reverse_n new_count extract
+
+func reverse_n n as
+  # reverse the order of the previous n values
+  return n store_n n load_n
 
 func reverse as
-    return depth reverse_n
+  # reverse the order of all previous values
+  return depth reverse_n
 
 func dup_prev_n_loop n look_back as
   exit when n 0 =
   return n look_back + 1 - peek    n 1 - look_back 1 +  dup_prev_n_loop
 
 func dup_prev_n n as
+  # duplicate the previous n values
   exit when n 0 =
   return n 0 dup_prev_n_loop
 
 func dup_prev as
+  # duplicate all previous values
   return depth dup_prev_n
 
 
