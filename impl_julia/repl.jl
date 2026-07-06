@@ -30,9 +30,7 @@ function run_repl()
             flush(stdout)
 
             # Read a line from standard input
-            line = readline(stdin)
-
-            # Check if user typed actual characters or hit enter on a blank line
+            line = chomp(readline(stdin))
             trimmed_line = strip(line)
 
             # --- CONSECUTIVE EMPTY LINE CHECKER ---
