@@ -69,9 +69,11 @@ func load_all as
 #    exit when n 0 =
 #    set new_count as n 1 -
 #
-#    return new_count reverse_n new_count extract
+#    return  new_count reverse_n 
+#            new_count extract
 
 func store_n_reverse n as
+    # store n previous values in reverse order
     exit when n 0 =
 
     return  n 1 - peek store
