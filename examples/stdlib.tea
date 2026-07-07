@@ -79,7 +79,9 @@ func store_n_reverse n as
             store_n_reverse
 
 func reverse_n n as
-    return n store_n_reverse n drop_n n load_n
+    return  n store_n_reverse
+            n drop_n
+            n load_n
 
 func reverse as
     return depth reverse_n
