@@ -25,7 +25,7 @@ expression is a identifier_or_integer_list
 statement start with a statement_keyword
 statement_keyword is either set, func, return,  exit, output, error
 
-expression keywords are  fn, apply, input, extract, peek, exchange, +, -, *, /, mod, <, >, <=, >=, =
+expression keywords are  fn, apply, input, extract, peek, exchange, load, store, +, -, *, /, mod, <, >, <=, >=, =
 
 
 token_list is a list of token
@@ -37,7 +37,7 @@ a statement involves an expression
 
 # Notes
 
-reserved keywords are: set, func, return,  exit, output, error, fn, apply, input, as, when, extract, peek, exchange, +, -, *, /, mod, <, >, <=, >=, =
+reserved keywords are: set, func, return,  exit, output, error, fn, apply, input, as, when, extract, peek, exchange, load, store, +, -, *, /, mod, <, >, <=, >=, =
 
 statements use prefix notation
 expression use postfix notation
@@ -72,6 +72,8 @@ peek      returns the value located at a given address
 exchange  exchange a value at a given address with the value on top of the stack
 fn        returns the address of a function
 apply     given a function address, apply the function refered to
+store     push the value on top of the main stack onto the auxiliary stack
+load      pop the value on top of the auxiliary stack onto the main stack
 
 The following pop two values off the stack
 +   and add them
