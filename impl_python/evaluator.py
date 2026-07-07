@@ -103,26 +103,26 @@ class RPNEvaluator:
                 # Translate integer -> name -> AST node
                 func_name = self.env.get_name_by_id(func_id)
                 if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]:
-                    self.execute_operator_callback(func_name, main_stack)
+                    self.execute_operator_callback(func_name, main_stack, aux_stack)
                 else:
                     func_obj  = self.env.functions[func_name]
 
                     # Execute the function block exactly like a normal call
-                    self.execute_function_callback(func_obj, main_stack)
+                    self.execute_function_callback(func_obj, main_stack, aux_stack)
 
 
             elif tok in self.env.functions:
                 # If we hit an immediate function invocation,
                 # we'll let the interpreter handle it via a callback
                 func_obj = self.env.functions[tok]
-                self.execute_function_callback(func_obj, main_stack)
+                self.execute_function_callback(func_obj, main_stack, aux_stack)
 
             elif self.env.scopes and tok in self.env.scopes[-1]:
                 val = self.env.get_variable_value(tok)
                 main_stack.append(val)
 
             elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]:
-                self.execute_operator_callback(tok, main_stack)
+                self.execute_operator_callback(tok, main_stack, aux_stack)
 
             else:
                 raise NameError(f"Runtime Error: Unknown operator or symbol '{tok}'")
