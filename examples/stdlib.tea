@@ -3,6 +3,19 @@ func drop x as
   # discard value
   return
 
+func drop_n n as
+  # discard n values
+  exit when n 0 =
+  return drop n 1 - drop_n
+
+func drop_all as
+  return depth drop_n
+
+func clear x as
+  # clear the stack
+  exit when depth 1 =
+  return clear
+
 func dup x as
   # duplicate value
   return x x
@@ -58,13 +71,18 @@ func load_all as
 #
 #    return new_count reverse_n new_count extract
 
+func store_n_reverse n as
+    exit when n 0 =
+
+    return  n 1 - peek store
+            n 1 -
+            store_n_reverse
+
 func reverse_n n as
-  # reverse the order of the previous n values
-  return n store_n n load_n
+    return n store_n_reverse n drop_n n load_n
 
 func reverse as
-  # reverse the order of all previous values
-  return depth reverse_n
+    return depth reverse_n
 
 func dup_prev_n_loop n look_back as
   exit when n 0 =
