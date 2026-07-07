@@ -227,12 +227,12 @@ class ASTInterpreter:
     def execute_operator(self, operator, main_stack, aux_stack):
 
         if operator in ("+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "="):
-            if target_position < 2:
+            if len(main_stack) < 2:
                 raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
             # Every single one of these operators requires exactly 2 elements
             b, a = main_stack.pop(), main_stack.pop()
         if operator in ("peek", "extract", "exchange", "load", "store"):
-            if target_position < 1:
+            if len(main_stack) < 1:
                 raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
 
         match operator:
