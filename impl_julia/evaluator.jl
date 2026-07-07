@@ -275,8 +275,13 @@ function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vect
             a = pop!(stack)
         end
     end
-    if operator in ["peek", "extract", "exchange", "load", "store"]
+    if operator in ["peek", "extract", "exchange", "store"]
         if length(stack) < 1
+            error("Runtime Error: Stack underflow during '$operator' operation")
+        end
+    end
+    if operator in ["load"]
+        if length(aux_stack) < 1
             error("Runtime Error: Stack underflow during '$operator' operation")
         end
     end
