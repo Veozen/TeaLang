@@ -11,7 +11,7 @@ mutable struct Environment
         new(
             [Dict{String, Int64}()], # Start with one default root scope dictionary
             Dict{String, FuncStmt}(), # Empty function mapping registry
-            String["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]
+            String["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]
         )
     end
 end
@@ -77,10 +77,13 @@ struct RPNEvaluator
 end
 
 # 2. Main RPN Stream Processor
-function evaluate_expr!(evaluator::RPNEvaluator, expr_node::Expr, stack::Union{Nothing, Vector{Int64}}=nothing)
+function evaluate_expr!(evaluator::RPNEvaluator, expr_node::Expr, stack::Union{Nothing, Vector{Int64}}=nothing, aux_stack::Union{Nothing, Vector{Int64}}=nothing)
     # If no stack is passed from a parent call, initialize a fresh one
     if isnothing(stack)
         stack = Int64[]
+    end
+    if isnothing(aux_stack)
+        aux_stack = Int64[]
     end
 
     for token in expr_node.tokens
@@ -137,26 +140,26 @@ function evaluate_expr!(evaluator::RPNEvaluator, expr_node::Expr, stack::Union{N
             # Translate integer index -> string name -> AST branch
             func_name = get_name_by_id(evaluator.env, func_id)
 
-            if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]
+            if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]
                 # Look up the interpreter globally or create runtime binding links
                 # We can handle the evaluation using our previously defined operator engine
                 # passing a dummy/placeholder reference or adjusting your call parameters:
-                execute_operator!(ASTInterpreter(evaluator.env), func_name, stack)
+                execute_operator!(ASTInterpreter(evaluator.env), func_name, stack, aux_stack)
             else
                 func_obj = evaluator.env.functions[func_name]
-                execute_user_function!(ASTInterpreter(evaluator.env), func_obj, stack)
+                execute_user_function!(ASTInterpreter(evaluator.env), func_obj, stack, aux_stack)
             end
 
         elseif haskey(evaluator.env.functions, tok)
             func_obj = evaluator.env.functions[tok]
-            execute_user_function!(ASTInterpreter(evaluator.env), func_obj, stack)
+            execute_user_function!(ASTInterpreter(evaluator.env), func_obj, stack, aux_stack)
 
         elseif !isempty(evaluator.env.scopes) && haskey(evaluator.env.scopes[end], tok)
             val = get_variable_value(evaluator.env, tok)
             push!(stack, val)
 
-        elseif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]
-            execute_operator!(ASTInterpreter(evaluator.env), tok, stack)
+        elseif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]
+            execute_operator!(ASTInterpreter(evaluator.env), tok, stack, aux_stack)
 
         else
             error("NameError: Runtime Error: Unknown operator or symbol '$tok'")
@@ -263,14 +266,21 @@ function execute_statements!(interp::ASTInterpreter, node::ImportStmt)
     end
 end
 
-function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vector{Int64})
-    if length(stack) < 2
-        error("Runtime Error: Stack underflow before executing operator '$operator'")
+function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vector{Int64}, aux_stack::Vector{Int64})
+    if operator in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "="]
+        if length(stack) < 2
+            error("Runtime Error: Stack underflow during '$operator' operation")
+            # Every single one of these operators requires exactly 2 elements
+            b = pop!(stack)
+            a = pop!(stack)
+        end
+    end
+    if operator in ["peek", "extract", "exchange", "load", "store"]
+        if length(stack) < 1
+            error("Runtime Error: Stack underflow during '$operator' operation")
+        end
     end
 
-    # Pop the top two elements
-    b = pop!(stack)
-    a = pop!(stack)
 
     if operator == "+"
         push!(stack, a + b)
@@ -294,8 +304,7 @@ function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vect
         push!(stack, a == b ? 1 : 0)
 
     elseif operator == "peek"
-        push!(stack, a) # Put 'a' back on the stack
-        index = b       # Relative index
+        index = pop!(stack)       # Relative index
 
         # 1-Based Position Calculation:
         # Python: len(stack) - 1 - index
@@ -309,8 +318,7 @@ function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vect
         push!(stack, stack[target_position])
 
     elseif operator == "extract"
-        push!(stack, a) # Put 'a' back on the stack
-        index = b
+        index = pop!(stack)
 
         target_position = length(stack) - index
 
@@ -322,8 +330,7 @@ function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vect
         push!(stack, value)
 
     elseif operator == "exchange"
-        push!(stack, a) # Put 'a' back on the stack
-        index = b
+        index = pop!(stack)
 
         target_position = length(stack) - index
 
@@ -334,15 +341,21 @@ function execute_operator!(interp::ASTInterpreter, operator::String, stack::Vect
         # In-place elegant swap syntax in Julia
         stack[target_position], stack[end] = stack[end], stack[target_position]
 
+    elseif operator == "load"
+        value = pop!(aux_stack)
+        push!(stack, value)
+
+    elseif operator == "store"
+        value = pop!(stack)
+        push!(aux_stack, value)
+
     else
         # Unrecognized operator recovery
-        push!(stack, a)
-        push!(stack, b)
         error("ValueError: Unknown operator: $operator")
     end
 end
 
-function execute_user_function!(interp::ASTInterpreter, func_node::FuncStmt, current_stack::Vector{Int64})
+function execute_user_function!(interp::ASTInterpreter, func_node::FuncStmt, current_stack::Vector{Int64}, aux_stack::Vector{Int64})
     # 1. Capture the exact stack depth BEFORE argument consumption
     calling_depth = length(current_stack)
 
@@ -376,9 +389,9 @@ function execute_user_function!(interp::ASTInterpreter, func_node::FuncStmt, cur
     try
         # 5. Handle Optional Guard
         if !isnothing(func_node.exit_stmt)
-            cond_result = evaluate_expr!(interp.evaluator, func_node.exit_stmt.condition, nothing)
+            cond_result = evaluate_expr!(interp.evaluator, func_node.exit_stmt.condition, nothing, nothing)
             if !isempty(cond_result) && cond_result[end] != 0
-                evaluate_expr!(interp.evaluator, func_node.exit_stmt.expr, current_stack)
+                evaluate_expr!(interp.evaluator, func_node.exit_stmt.expr, current_stack, aux_stack)
                 return nothing # Early guard exit!
             end
         end
@@ -387,7 +400,7 @@ function execute_user_function!(interp::ASTInterpreter, func_node::FuncStmt, cur
         execute_statements!(interp, func_node.body_stmt)
 
         # 7. Run the mandatory final return statement expression
-        evaluate_expr!(interp.evaluator, func_node.return_stmt.expr, current_stack)
+        evaluate_expr!(interp.evaluator, func_node.return_stmt.expr, current_stack, aux_stack)
         return nothing
 
     finally
