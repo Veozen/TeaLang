@@ -59,7 +59,7 @@ function definitions are stored in a global dictionary
 statement keywords
 set       assigns the values on the expression stack to the identifiers listed between set and as
 output    assigns the values on the expression stack to the standard output stream
-error    assigns the values on the expression stack to the standard error stream
+error     assigns the values on the expression stack to the standard error stream
 func      declares a function in the global function dictionary
 return    evaluates an expression and return the values onto the stack from which the function is called
 exit      conditionally evaluates an expression and return the values onto the stack from which the function is called
