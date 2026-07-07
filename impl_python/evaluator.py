@@ -231,8 +231,11 @@ class ASTInterpreter:
                 raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
             # Every single one of these operators requires exactly 2 elements
             b, a = main_stack.pop(), main_stack.pop()
-        if operator in ("peek", "extract", "exchange", "load", "store"):
+        if operator in ("peek", "extract", "exchange", "store"):
             if len(main_stack) < 1:
+                raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
+        if operator in ("load"):
+            if len(aux_stack) < 1:
                 raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
 
         match operator:
