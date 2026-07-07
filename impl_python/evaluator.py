@@ -1,7 +1,7 @@
 import sys
-from parser_nodes import *
+from TeaLang_basic_parser_nodes import *
 from lexer import *
-from parser import *
+from TeaLang_basic_parser import *
 
 class Environment:
     def __init__(self):
@@ -12,7 +12,7 @@ class Environment:
 
         # Maps function names -> FuncStmt AST nodes
         self.functions = {}
-        self.function_ids = ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]
+        self.function_ids = ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]
 
     def push_scope(self, bindings):
         self.scopes.append(bindings)
@@ -49,21 +49,24 @@ class RPNEvaluator:
     def __init__(self, environment):
         self.env = environment
 
-    def evaluate_expr(self, expr_node, stack=None):
+    def evaluate_expr(self, expr_node, main_stack=None, aux_stack=None):
         """Processes the tokens inside an Expr AST node."""
         #stack.clear() # Clear pipeline for fresh calculation
-        if stack is None:
-            stack = []
+        if main_stack is None:
+            main_stack = []
+
+        if aux_stack is None:
+            aux_stack = []
 
         for token in expr_node.tokens:
 
             if isinstance(token, Integer):
-                stack.append(token.value)
+                main_stack.append(token.value)
                 continue
             elif isinstance(token, FunctionPointer):
                 func_name = token.name
                 func_id   = self.env.get_id_by_name(func_name)
-                stack.append(func_id)
+                main_stack.append(func_id)
                 continue
             elif isinstance(token, Identifier):
                 tok = token.name
@@ -78,7 +81,7 @@ class RPNEvaluator:
 
                 # Convert to integer and push it onto the stack pipeline
                 try:
-                    stack.append(int(user_line))
+                    main_stack.append(int(user_line))
                 except ValueError:
                     raise TypeError(f"Runtime Error: 'input' expected an integer, but got '{user_line}'")
 
@@ -89,37 +92,37 @@ class RPNEvaluator:
 
                 if "depth" in active_scope:
                     # Push the anchor depth onto the math stack
-                    stack.append(active_scope["depth"])
+                    main_stack.append(active_scope["depth"])
                 else:
                     # If called outside a function, default to 0
-                    stack.append(0)
+                    main_stack.append(0)
 
             elif tok == "apply":
-                func_id = stack.pop() # Pops the raw integer ID
+                func_id = main_stack.pop() # Pops the raw integer ID
 
                 # Translate integer -> name -> AST node
                 func_name = self.env.get_name_by_id(func_id)
-                if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]:
-                    self.execute_operator_callback(func_name, stack)
+                if func_name in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]:
+                    self.execute_operator_callback(func_name, main_stack)
                 else:
                     func_obj  = self.env.functions[func_name]
 
                     # Execute the function block exactly like a normal call
-                    self.execute_function_callback(func_obj, stack)
+                    self.execute_function_callback(func_obj, main_stack)
 
 
             elif tok in self.env.functions:
                 # If we hit an immediate function invocation,
                 # we'll let the interpreter handle it via a callback
                 func_obj = self.env.functions[tok]
-                self.execute_function_callback(func_obj, stack)
+                self.execute_function_callback(func_obj, main_stack)
 
             elif self.env.scopes and tok in self.env.scopes[-1]:
                 val = self.env.get_variable_value(tok)
-                stack.append(val)
+                main_stack.append(val)
 
-            elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange"]:
-                self.execute_operator_callback(tok, stack)
+            elif tok in ["+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "=", "peek", "extract", "exchange", "load", "store"]:
+                self.execute_operator_callback(tok, main_stack)
 
             else:
                 raise NameError(f"Runtime Error: Unknown operator or symbol '{tok}'")
@@ -221,75 +224,80 @@ class ASTInterpreter:
 
             return None
 
-    def execute_operator(self, operator, stack):
-        # Every single one of these operators requires exactly 2 elements
-        b, a = stack.pop(), stack.pop()
+    def execute_operator(self, operator, main_stack, aux_stack):
+
+        if operator in ("+", "-", "*", "/", "mod", "<", ">", "<=", ">=", "="):
+            if target_position < 2:
+                raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
+            # Every single one of these operators requires exactly 2 elements
+            b, a = main_stack.pop(), main_stack.pop()
+        if operator in ("peek", "extract", "exchange", "load", "store"):
+            if target_position < 1:
+                raise IndexError(f"Runtime Error: Stack underflow during {operator} operation")
 
         match operator:
-            case "+":   stack.append(a + b)
-            case "-":   stack.append(a - b)
-            case "*":   stack.append(a * b)
-            case "/":   stack.append(a // b)
-            case "mod": stack.append(a % b)
-            case "<":   stack.append(1 if a < b else 0)
-            case ">":   stack.append(1 if a > b else 0)
-            case "<=":  stack.append(1 if a <= b else 0)
-            case ">=":  stack.append(1 if a >= b else 0)
-            case "=":   stack.append(1 if a == b else 0)
+            case "+":   main_stack.append(a + b)
+            case "-":   main_stack.append(a - b)
+            case "*":   main_stack.append(a * b)
+            case "/":   main_stack.append(a // b)
+            case "mod": main_stack.append(a % b)
+            case "<":   main_stack.append(1 if a < b else 0)
+            case ">":   main_stack.append(1 if a > b else 0)
+            case "<=":  main_stack.append(1 if a <= b else 0)
+            case ">=":  main_stack.append(1 if a >= b else 0)
+            case "=":   main_stack.append(1 if a == b else 0)
             case "peek":
-                # put a back on the stack
-                stack.append(a)
                 # 1. Pop the relative index from the top of the stack
-                index = b
+                index = main_stack.pop()
 
                 # 2. Calculate the actual position from the top of the stack
                 # If index is 0, it means the item right below the index we just popped.
-                target_position = len(stack) - 1 - index
+                target_position = len(main_stack) - 1 - index
 
                 if target_position < 0:
                     raise IndexError("Runtime Error: Stack underflow during peek operation")
 
                 # 3. Copy the value (do NOT remove it!) and push it to the top
-                value = stack[target_position]
-                stack.append(value)
+                value = main_stack[target_position]
+                main_stack.append(value)
             case "extract":
-                # put a back on the stack
-                stack.append(a)
                 # 1. Pop the relative index from the top of the stack
-                index = b
+                index = main_stack.pop()
 
                 # 2. Calculate the actual position from the top of the stack
                 # If index is 0, it means the item right below the index we just popped.
-                target_position = len(stack) - 1 - index
+                target_position = len(main_stack) - 1 - index
 
                 if target_position < 0:
                     raise IndexError("Runtime Error: Stack underflow during pick operation")
 
-                value = stack.pop(target_position)
-                stack.append(value)
+                value = main_stack.pop(target_position)
+                main_stack.append(value)
+
             case "exchange":
-                # put a back on the stack
-                stack.append(a)
                 # 1. Pop the relative index
-                index = b
+                index = main_stack.pop()
 
                 # 2. Calculate the target position
-                target_position = len(stack) - 1 - index
+                target_position = len(main_stack) - 1 - index
 
                 if target_position < 0:
                     raise IndexError("Runtime Error: Stack underflow during exchange")
 
                 # 3. Swap the target with the current top element in-place
-                stack[target_position], stack[-1] = stack[-1], stack[target_position]
-                
+                main_stack[target_position], main_stack[-1] = main_stack[-1], main_stack[target_position]
+            case "load":
+                value = aux_stack.pop()
+                main_stack.append(value)
+            case "store":
+                value = main_stack.pop()
+                aux_stack.append(value)
+
             case _:
-                # Put them back if the operator wasn't recognized, or handle error
-                stack.append(a)
-                stack.append(b)
                 raise ValueError(f"Unknown operator: {operator}")
 
 
-    def execute_user_function(self, func_node, current_stack):
+    def execute_user_function(self, func_node, current_stack, aux_stack):
         """Binds scopes, runs optional guards, and executes the function's internal statements."""
         # 1. Grab arguments from the data stack
         #print("func name: ", func_node.name.value)
@@ -322,7 +330,7 @@ class ASTInterpreter:
                 cond_result = self.evaluator.evaluate_expr(func_node.exit_stmt.condition)
                 #print("condition: ", cond_result)
                 if cond_result and cond_result[-1] != 0: # If guard condition is true (non-zero)
-                    guard_return_val = self.evaluator.evaluate_expr(func_node.exit_stmt.expr, current_stack)
+                    guard_return_val = self.evaluator.evaluate_expr(func_node.exit_stmt.expr, current_stack, aux_stack)
                     #print("guard value: ", guard_return_val)
                     return  None # Exit early! Skip the body!
 
@@ -330,7 +338,7 @@ class ASTInterpreter:
             self.execute_statements(func_node.body_stmt)
 
             # 6. Run the mandatory final return statement
-            return_result = self.evaluator.evaluate_expr(func_node.return_stmt.expr, current_stack)
+            return_result = self.evaluator.evaluate_expr(func_node.return_stmt.expr, current_stack, aux_stack)
             #print("return value: ", return_result)
             return None
 
