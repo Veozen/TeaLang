@@ -31,7 +31,7 @@ expression keywords are  fn, apply, input, extract, peek, exchange, load, store,
 token_list is a list of token
 a token is a sequence of character delimited by space
 
-a statment list cannot involve a return_statement
+a statement list cannot involve a return_statement
 a statement involves an expression
 
 
@@ -49,7 +49,7 @@ function definitions cannot be nested
 loops are handled by function recursion
 conditional are handeled by functions guard statements
 
-boudaries between statement are identified when a new statement keyword is found
+boundaries between statement are identified when a new statement keyword is found
 
 
 # evaluator actions
