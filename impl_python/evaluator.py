@@ -127,7 +127,7 @@ class RPNEvaluator:
             else:
                 raise NameError(f"Runtime Error: Unknown operator or symbol '{tok}'")
 
-        return list(stack) # Return whatever is left on the stack
+        return list(main_stack) # Return whatever is left on the stack
 
 
 
