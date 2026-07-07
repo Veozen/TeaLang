@@ -4,9 +4,9 @@ A concatenative programming language for integer sequences.
 
 Statements use prefix notation.   
 Expression use postfix notation.  
-No paraenthesis, brackets or indents.  
 No loops, just recursions.  
 No if, just function guard statement.  
+No parenthesis, brackets or indents.  
 No nested function definitions.  
 
 ## Quick Start
