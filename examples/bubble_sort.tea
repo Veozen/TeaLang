@@ -1,0 +1,28 @@
+#sort pair of values
+func sort_pair x y as
+  exit x y when x y <
+  return y x
+
+# Runs a single bubbling pass over elements
+func bubble_pass x y n as
+  exit  x y sort_pair
+        n  load_n
+        when depth 3 =
+  return  x y sort_pair
+          store
+          n 1 + bubble_pass
+
+# run n bubble passes
+func bubble_sort_loop n as
+  exit when n 0 =
+  return  0 bubble_pass
+          n 1 - bubble_sort_loop
+
+
+# Main entry point to sort the stack based on its current size
+func bubble_sort as
+  return depth bubble_sort_loop
+
+
+output 1 9 2 8 3 7 4 6 5 bubble_sort
+
