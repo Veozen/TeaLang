@@ -1,3 +1,5 @@
+import examples/stdlib.tea
+
 #sort pair of values
 func sort_pair x y as
   exit x y when x y <
@@ -24,5 +26,5 @@ func bubble_sort as
   return depth bubble_sort_loop
 
 
-output 1 9 2 8 3 7 4 6 5 bubble_sort
-
+output 1 9 2 8 3 7 4 6 5 bubble_sort          #1 2 3 4 5 6 7 8 9
+output 1 9 2 8 3 7 4 6 5 reverse bubble_sort  #1 2 3 4 5 6 7 8 9
