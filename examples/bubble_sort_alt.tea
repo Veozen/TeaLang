@@ -1,0 +1,29 @@
+import examples/stdlib.tea
+
+# Comparison step: compares the top two elements, stores the larger one, and keeps the smaller one
+func store_largest_within_pair x y as
+  exit y store x when x y <=
+  return x store y
+
+# Inner loop: bubbles the largest element among the top n elements to the bottom
+func store_largest n as
+  exit when n 1 <=
+  return  store_largest_within_pair
+          n 1 - store_largest
+
+# Outer loop: runs n passes to sort the stack
+func bubble_sort_loop n as
+exit when n 0 <=
+return  n store_largest         # this leaves the smallest element on the stack
+        n 1 - load_n            # recover the other larger elements
+        n 1 - bubble_sort_loop  # do again, this time over the larger elements only
+
+# Main entry point to sort the stack based on its current size
+func bubble_sort as
+  return depth bubble_sort_loop
+
+
+output 1 9 2 8 3 7 4 6 5 bubble_sort          #1 2 3 4 5 6 7 8 9
+output 1 9 2 8 3 7 4 6 5 reverse bubble_sort  #1 2 3 4 5 6 7 8 9
+
+
