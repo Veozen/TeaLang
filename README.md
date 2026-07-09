@@ -20,3 +20,16 @@ No nested function definitions.
 
 3. Run a script file:  
    python Tea.py examples/fibonacci.tea
+
+## Editor Support
+
+### Kate / KWrite
+If you use the Kate editor, you can enable syntax highlighting for `.tea` files:
+
+1. Copy `editors/kate/tealang.xml` to your local syntax directory:
+   * **Linux (Standard):** `~/.local/share/org.kde.syntax-highlighting/syntax/`
+   * **Linux (Steam Deck / Flatpak):** `~/.var/app/org.kde.kate/data/org.kde.syntax-highlighting/syntax/`
+   * **Windows:** `%APPDATA%\org.kde.syntax-highlighting\syntax\`
+   * **macOS:** `~/Library/Application Support/org.kde.syntax-highlighting/syntax/`
+   *(Note: Create the `syntax` folder if it doesn't exist)*
+2. Restart Kate.
