@@ -1,0 +1,47 @@
+<language name="TeaLang" version="1" kateversion="5.0" section="Sources" extensions="*.tea;*.txt" mimetype="text/x-tealang" casesensitive="true">
+<highlighting>
+<list name="statements">
+<item>set</item>
+<item>func</item>
+<item>return</item>
+<item>exit</item>
+<item>output</item>
+<item>error</item>
+<item>as</item>
+<item>when</item>
+</list>
+<list name="expr_keywords">
+<item>fn</item>
+<item>apply</item>
+<item>input</item>
+<item>extract</item>
+<item>peek</item>
+<item>exchange</item>
+<item>load</item>
+<item>store</item>
+</list>
+<contexts>
+<context name="Normal" attribute="Normal Text" lineEndContext="#stay">
+<keyword attribute="Keyword" context="#stay" String="statements"/>
+<keyword attribute="Builtin" context="#stay" String="expr_keywords"/>
+<DetectChar attribute="Comment" context="Comment" char="#"/>
+<AnyChar attribute="Operator" context="#stay" String="+-*/<>="/>
+<WordDetect attribute="Operator" context="#stay" String="mod"/>
+<WordDetect attribute="Operator" context="#stay" String="<="/>
+<WordDetect attribute="Operator" context="#stay" String=">="/>
+<Int attribute="Decimal" context="#stay"/>
+</context>
+<context name="Comment" attribute="Comment" lineEndContext="#pop">
+<IncludeRules context="##Comments"/>
+</context>
+</contexts>
+<itemDatas>
+<itemData name="Normal Text" defStyleNum="dsNormal"/>
+<itemData name="Keyword" defStyleNum="dsKeyword" bold="true"/>
+<itemData name="Builtin" defStyleNum="dsBuiltIn" bold="false"/>
+<itemData name="Operator" defStyleNum="dsOperator"/>
+<itemData name="Decimal" defStyleNum="dsDecVal"/>
+<itemData name="Comment" defStyleNum="dsComment" italic="true"/>
+</itemDatas>
+</highlighting>
+</language>
