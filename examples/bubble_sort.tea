@@ -6,20 +6,19 @@ func sort_pair x y as
   return y x
 
 # Runs a single bubbling pass over elements
-func bubble_pass x y n as
+func bubble_pass x y as
   exit  x y sort_pair
-        n  load_n
-        when depth 3 =
-  return  x y sort_pair
-          store
-          n 1 + bubble_pass
+        when depth 2 =
+  set x y as x y sort_pair
+  return  x
+          bubble_pass
+          y
 
-# run n bubble passes
+# Outer loop: runs n passes to sort the stack
 func bubble_sort_loop n as
-  exit when n 1 =
-  return  0 bubble_pass
-          n 1 - bubble_sort_loop
-
+exit when n 1 <=
+return  bubble_pass         # this leaves the smallest element on the stack
+        n 1 - bubble_sort_loop  # do again, this time over the larger elements only
 
 # Main entry point to sort the stack based on its current size
 func bubble_sort as
@@ -28,3 +27,5 @@ func bubble_sort as
 
 output 1 9 2 8 3 7 4 6 5 bubble_sort          #1 2 3 4 5 6 7 8 9
 output 1 9 2 8 3 7 4 6 5 reverse bubble_sort  #1 2 3 4 5 6 7 8 9
+
+
