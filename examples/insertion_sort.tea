@@ -1,0 +1,24 @@
+import examples/stdlib.tea
+
+func insert_when_smaller_if_enough x as
+  exit x when depth 1 =
+  return x insert_when_smaller
+
+func insert_when_smaller y x as
+  exit y x when x y >=
+  return x insert_when_smaller_if_enough y
+
+func insertion_sort_loop n as
+  exit when n 1 =
+  return  load insert_when_smaller
+          n 1 - insertion_sort_loop
+
+func insertion_sort as
+  output depth
+  return  depth 1 - store_n
+          depth insertion_sort_loop
+
+output 1 2 3 2 1 insertion_sort # 1 1 2 2 3
+
+output 1 9 2 8 3 7 4 6 5 insertion_sort          #1 2 3 4 5 6 7 8 9
+output 1 9 2 8 3 7 4 6 5 reverse insertion_sort  #1 2 3 4 5 6 7 8 9
