@@ -120,7 +120,11 @@ class Parser:
           self.consume("func")
           name        = self.advance()
           args        = self.parse_identifier_list()
-
+            
+          if "." in name.value:
+            raise SyntaxError("Invalid identifier: function names cannot contain a dot. "
+                              f"function {name.value} contains '.' at line {name.line}")
+              
           # --- THE OPTIONAL GUARD CHECK ---
           guard_statement = None
 
