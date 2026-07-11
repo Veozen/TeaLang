@@ -99,7 +99,10 @@ func dup_prev as
   # duplicate all previous values
   return depth dup_prev_n
 
-
+func insert y x n as
+  # insert value on top of stack n positions back
+  exit y x when n 0 =
+  return x n 1 - insert y
 
 # math
 func min x y as
