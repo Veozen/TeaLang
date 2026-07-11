@@ -1,5 +1,6 @@
-program is a list of statements
-a statement can be either a set_statement,  func_statement, output_statement, error_statement, comment_statement
+program is list of import statements followed by a list of statements
+an import statement is import identifier
+an import_statement is optional
 
 set_statement     is set identifier identifier_list as expression
 output_statement  is output expression
