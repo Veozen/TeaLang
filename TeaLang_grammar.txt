@@ -38,7 +38,7 @@ a statement involves an expression
 
 # Notes
 
-reserved keywords are: set, func, return,  exit, output, error, fn, apply, input, as, when, extract, peek, exchange, load, store, +, -, *, /, mod, <, >, <=, >=, =
+reserved keywords are: set, func, return,  exit, output, error, import, fn, apply, input, as, when, extract, peek, exchange, load, store, +, -, *, /, mod, <, >, <=, >=, =
 
 statements use prefix notation
 expression use postfix notation
@@ -61,6 +61,7 @@ statement keywords
 set       assigns the values on the expression stack to the identifiers listed between set and as
 output    assigns the values on the expression stack to the standard output stream
 error     assigns the values on the expression stack to the standard error stream
+import    import all functions in the program referred
 func      declares a function in the global function dictionary
 return    evaluates an expression and return the values onto the stack from which the function is called
 exit      conditionally evaluates an expression and return the values onto the stack from which the function is called
