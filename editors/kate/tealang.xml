@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language>
-<language name="TeaLang" version="1" kateversion="5.0" section="Sources" extensions="*.tea;*.txt" mimetype="text/x-tealang" casesensitive="true">
+<language name="TeaLang" version="1" kateversion="5.0" section="Sources" extensions="*.tea;" mimetype="text/x-tealang" casesensitive="true">
     <highlighting>
         <list name="statements">
             <item>set</item>
@@ -9,6 +9,7 @@
             <item>exit</item>
             <item>output</item>
             <item>error</item>
+            <item>import</item>
             <item>as</item>
             <item>when</item>
         </list>
