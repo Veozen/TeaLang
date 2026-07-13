@@ -247,14 +247,14 @@ class Parser:
             # Check 1: Is it a raw number?
             if identifier_value.isdigit():
                 raise SyntaxError(
-                    f"Line {current_token.line}, Col {current_token.column}: "
+                    f"Line {current_token.line}, Col {current_token.col}: "
                     f"Invalid identifier '{identifier_value}'. Variable names cannot be numeric constants."
                 )
 
             # Check 2: Is it a reserved language keyword?
             if identifier_value in self.reserved_keywords:
                 raise SyntaxError(
-                    f"Line {current_token.line}, Col {current_token.column}: "
+                    f"Line {current_token.line}, Col {current_token.col}: "
                     f"Invalid identifier '{identifier_value}'. '{identifier_value}' is a reserved keyword."
                 )
 
