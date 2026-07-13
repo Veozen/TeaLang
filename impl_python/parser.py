@@ -181,12 +181,18 @@ class Parser:
                         column= start_token.col)
 
     def parse_import(self):
+        alias = None
         start_token = self.peek()
         self.consume("import")
         filename = self.parse_identifier()
-        return ImportStmt(filename = filename,
-                          line  = start_token.line,
-                          column= start_token.col)
+
+        if self.peek().value == "as":
+            self.consume("as")
+            alias = self.parse_identifier()
+        return ImportStmt(filename  = filename,
+                          alias     = alias,
+                          line      = start_token.line,
+                          column    = start_token.col)
 
     def parse_return(self):
         start_token = self.peek()
