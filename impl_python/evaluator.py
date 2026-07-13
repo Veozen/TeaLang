@@ -201,7 +201,8 @@ class ASTInterpreter:
             # --- IMPORT STATEMENT ---
             elif isinstance(node, ImportStmt):
                 # 1. Get the filename string from the node (e.g., "somefile.prg")
-                filename = node.filename.name
+                filename  = node.filename.name
+                alias     = node.alias
 
                 try:
                     # 2. Parse the target file into its own independent AST block
@@ -213,7 +214,10 @@ class ASTInterpreter:
 
                         # 4. SCRAPE ONLY FUNCTIONS: If it's a function statement, register it!
                         if isinstance(sub_node, FuncStmt):
-                            func_name = sub_node.name.value
+                            if alias:
+                                func_name = alias.name + "." + sub_node.name.value
+                            else:
+                                func_name = sub_node.name.value
                             self.env.functions[func_name] = sub_node
 
                         # Any top-level 'set' or 'output' statements in the imported file
