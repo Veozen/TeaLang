@@ -59,7 +59,8 @@ class FuncStmt(Statement):
 
 @dataclass
 class ImportStmt(Statement):
-  filename : Identifier
+  filename  : Identifier
+  alias     : Identifier
 
 @dataclass
 class FunctionPointer:
