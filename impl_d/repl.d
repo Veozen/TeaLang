@@ -3,15 +3,16 @@ module repl;
 
 import std.stdio;
 import std.string;
+import std.string : toStringz;
 import std.array;
 import std.exception;
 import std.algorithm;
+import std.conv : to;
 import lexer;
 import parser;
 import evaluator;
+import linenoise; // Imports impl_d/linenoise.d directly
 
-// Assumes you already have:
-// tokenize(), Parser, ASTInterpreter, Environment, parseFileToAst()
 
 void runProgram(string prg) {
     auto tokens = tokenize(prg);
@@ -28,17 +29,22 @@ void runRepl() {
     writeln("TeaLang Interactive Interpreter!");
     writeln("Type 'exit' or press Ctrl+C to quit.\n");
 
+    // Enable history so UP/DOWN arrows work
+    linenoiseHistorySetMaxLen(100);
+
     string[] buffer;
     int emptyLineCount = 0;
 
     while (true) {
         try {
             string prompt = buffer.length == 0 ? "Tea> " : "... ";
-            std.stdio.write(prompt);
-            string line = std.stdio.readln();
-            if (line is null) {
-                writeln("\nGoodbye!");
-                break;
+            // std.stdio.write(prompt);
+            // string line = std.stdio.readln();
+
+            string line = linenoise.linenoise(prompt);
+
+            if (line.length > 0) {
+                linenoiseHistoryAdd(line);
             }
 
             // Trim only for logic, not for buffer storage
