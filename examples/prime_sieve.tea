@@ -4,7 +4,8 @@ import examples/stdlib.tea # we want load_n
 func count_down_to_from to from as
   exit from
   when from to =
-  return from to from 1 - count_down_to_from
+  return  from 
+          to from 1 - count_down_to_from
 
 # takes two number returns the first one only if it cant be  divided by the second
 func filter_factor_of x fac as
