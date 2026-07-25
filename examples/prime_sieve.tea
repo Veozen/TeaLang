@@ -1,0 +1,35 @@
+import examples/stdlib.tea # we want load_n
+
+# generate all integers in from - to
+func count_down_to_from to from as
+  exit from
+  when from to =
+  return from to from 1 - count_down_to_from
+
+# takes two number returns the first one only if it cant be  divided by the second
+func filter_factor_of x fac as
+  exit
+  when x fac mod 0 =
+  return x  # if its not a factor keep x
+
+# filter as long as the list is long enough
+func filter_factor x fac  as
+  exit x fac filter_factor_of
+  when depth 2 <=
+  return  fac filter_factor
+          x fac filter_factor_of
+
+# filter many times, each time store the smallest factor as a prime
+func filter_all_factors fac n as # n is to keep track of the number of factor stored on the auxiliary stack
+  exit fac store n
+  when depth 2 =
+  return  fac store
+          fac filter_factor
+          n 1 + filter_all_factors
+
+#apply the prime filters and retreive the result stored on the aux stack
+func prime_sieve as
+  return 1 filter_all_factors load_n
+
+output  2 100 count_down_to_from prime_sieve # all primes from 100 to 2
+
