@@ -186,7 +186,7 @@ class Parser:
         self.consume("import")
         filename = self.parse_identifier()
 
-        if self.peek().value == "as":
+        if self.peek() and self.peek().value == "as":
             self.consume("as")
             alias = self.parse_identifier()
         return ImportStmt(filename  = filename,
