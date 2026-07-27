@@ -54,6 +54,18 @@ public void linenoiseHistorySetMaxLen(int len) {
     history_max_len = len;
 }
 
+// Redraws the prompt line and places the cursor at `pos`
+private void refreshLine(string prompt, char[] buf, size_t pos) {
+    // \r (Move to column 0) -> \033[K (Clear line) -> Print prompt + buffer
+    writef("\r\033[K%s%s", prompt, buf);
+
+    // Move cursor back if it's not at the end of the text
+    if (buf.length > pos) {
+        writef("\033[%dD", buf.length - pos);
+    }
+    stdout.flush();
+}
+
 // Pure D implementation of linenoise prompt loop
 public string linenoise(string prompt) {
     int fd = STDIN_FILENO;
@@ -71,7 +83,7 @@ public string linenoise(string prompt) {
     stdout.flush();
 
     char[] buf;
-    int pos = 0;
+    size_t pos = 0; // Cursor position within buf
     int history_index = cast(int)history.length;
 
     while (true) {
@@ -82,19 +94,27 @@ public string linenoise(string prompt) {
 
         // Handle Return / Enter
         if (c == '\r' || c == '\n') {
-            write("\r\n"); // Changed from writeln();
-            stdout.flush();
-            return buf.idup;
+            int bytesAvailable = 0;
+            // Check if STDIN has more queued characters (i.e. mid-paste)
+            ioctl(fd, FIONREAD, &bytesAvailable);
+
+            if (bytesAvailable > 0) {
+                // We are inside a multi-line paste!
+                buf ~= "\n";
+                pos++;
+                write("\r\n");
+                stdout.flush();
+            } else {
+                // Real Enter key press -> end of input
+                write("\r\n");
+                stdout.flush();
+                return buf.idup;
+            }
         }
         // Handle Ctrl+C or Ctrl+D
         else if (c == 3 || c == 4) {
             write("\r\n"); // Changed from writeln();
             stdout.flush();
-            return null;
-        }
-        // Handle Ctrl+C or Ctrl+D
-        else if (c == 3 || c == 4) {
-            writeln();
             return null;
         }
         // Handle Backspace
@@ -106,37 +126,109 @@ public string linenoise(string prompt) {
                 stdout.flush();
             }
         }
-        // Handle Escape Sequences (Arrow keys)
+        // // Handle Escape Sequences (Arrow keys)
+        // else if (c == 27) {
+        //     char[2] seq;
+        //     if (read(fd, &seq[0], 1) == 1 && read(fd, &seq[1], 1) == 1) {
+        //         if (seq[0] == '[') {
+        //             // UP ARROW: History Backwards
+        //             if (seq[1] == 'A') {
+        //                 if (history_index > 0 && history.length > 0) {
+        //                     history_index--;
+        //                     // Clear line on terminal
+        //                     writef("\r\033[K%s%s", prompt, history[history_index]);
+        //                     stdout.flush();
+        //                     buf = history[history_index].dup;
+        //                 }
+        //             }
+        //             // DOWN ARROW: History Forwards
+        //             else if (seq[1] == 'B') {
+        //                 if (history_index < cast(int)history.length - 1) {
+        //                     history_index++;
+        //                     writef("\r\033[K%s%s", prompt, history[history_index]);
+        //                     stdout.flush();
+        //                     buf = history[history_index].dup;
+        //                 } else if (history_index == history.length - 1) {
+        //                     history_index++;
+        //                     writef("\r\033[K%s", prompt);
+        //                     stdout.flush();
+        //                     buf.length = 0;
+        //                 }
+        //             }
+        //             // Ignore bracketed paste escape sequences like \033[200~
+        //             else if (seq[1] >= '0' && seq[1] <= '9') {
+        //                 char discard;
+        //                 read(fd, &discard, 1); // drain till end of sequence
+        //             }
+        //             // RIGHT ARROW: Move cursor right
+        //             else if (seq[1] == 'C') {
+        //                 if (pos < buf.length) {
+        //                     pos++;
+        //                     write("\033[C");
+        //                     stdout.flush();
+        //                 }
+        //             }
+        //             // LEFT ARROW: Move cursor left
+        //             else if (seq[1] == 'D') {
+        //                 if (pos > 0) {
+        //                     pos--;
+        //                     write("\033[D");
+        //                     stdout.flush();
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+        // Escape sequence start (\033)
         else if (c == 27) {
-            char[2] seq;
-            if (read(fd, &seq[0], 1) == 1 && read(fd, &seq[1], 1) == 1) {
-                if (seq[0] == '[') {
-                    // UP ARROW: History Backwards
-                    if (seq[1] == 'A') {
-                        if (history_index > 0 && history.length > 0) {
-                            history_index--;
-                            // Clear line on terminal
-                            writef("\r\033[K%s%s", prompt, history[history_index]);
-                            stdout.flush();
-                            buf = history[history_index].dup;
-                        }
-                    }
-                    // DOWN ARROW: History Forwards
-                    else if (seq[1] == 'B') {
-                        if (history_index < cast(int)history.length - 1) {
-                            history_index++;
-                            writef("\r\033[K%s%s", prompt, history[history_index]);
-                            stdout.flush();
-                            buf = history[history_index].dup;
-                        } else if (history_index == history.length - 1) {
-                            history_index++;
-                            writef("\r\033[K%s", prompt);
-                            stdout.flush();
-                            buf.length = 0;
-                        }
+            char seq1, seq2;
+            if (read(fd, &seq1, 1) == 1 && seq1 == '[') {
+                if (read(fd, &seq2, 1) == 1) {
+                    switch (seq2) {
+                        case 'A': // UP Arrow: History backwards
+                            if (history_index > 0 && history.length > 0) {
+                                history_index--;
+                                buf = history[history_index].dup;
+                                pos = buf.length;
+                                refreshLine(prompt, buf, pos);
+                            }
+                            break;
+                        case 'B': // DOWN Arrow: History forwards
+                            if (history_index < cast(int)history.length - 1) {
+                                history_index++;
+                                buf = history[history_index].dup;
+                                pos = buf.length;
+                                refreshLine(prompt, buf, pos);
+                            } else if (history_index == history.length - 1) {
+                                history_index++;
+                                buf.length = 0;
+                                pos = 0;
+                                refreshLine(prompt, buf, pos);
+                            }
+                            break;
+                        case 'C': // RIGHT Arrow
+                            if (pos < buf.length) {
+                                pos++;
+                                refreshLine(prompt, buf, pos);
+                            }
+                            break;
+                        case 'D': // LEFT Arrow
+                            if (pos > 0) {
+                                pos--;
+                                refreshLine(prompt, buf, pos);
+                            }
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
+        }
+        // Tabs (convert to spaces during paste)
+        else if (c == '\t') {
+            buf ~= "    ";
+            write("    ");
+            stdout.flush();
         }
         // Printable ASCII characters
         else if (c >= 32 && c <= 126) {
